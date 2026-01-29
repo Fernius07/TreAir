@@ -10,6 +10,7 @@ const ManageApplications = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedApplication, setSelectedApplication] = useState(null);
+    const [editingJobId, setEditingJobId] = useState(null);
 
     // Form Builder State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,10 +27,19 @@ const ManageApplications = () => {
 
     const fetchData = async () => {
         setLoading(true);
+        // Fetch jobs first
         const { data: jobsData } = await supabase.from('job_openings').select('*').order('id', { ascending: false });
-        const { data: appsData } = await supabase.from('applications').select('*, job_openings(title)').order('submitted_at', { ascending: false });
-
         setJobs(jobsData || []);
+
+        // Fetch applications. Try with join, if it fails, fetch without join.
+        let { data: appsData, error } = await supabase.from('applications').select('*, job_openings(title)').order('submitted_at', { ascending: false });
+
+        if (error) {
+            console.warn("Join failed, fetching applications without join...");
+            const { data: simpleApps } = await supabase.from('applications').select('*').order('submitted_at', { ascending: false });
+            appsData = simpleApps;
+        }
+
         setApplications(appsData || []);
         setLoading(false);
     };
@@ -41,26 +51,37 @@ const ManageApplications = () => {
         setNewQuestion({ text: '', type: 'short', options: '' });
     };
 
+    const removeQuestion = (id) => {
+        setNewJob({ ...newJob, questions: newJob.questions.filter(q => q.id !== id) });
+    };
+
     const saveJob = async () => {
         if (!newJob.title) return;
 
         const jobData = {
             ...newJob,
-            id: Date.now()
+            id: editingJobId || Date.now()
         };
 
-        const { error } = await supabase.from('job_openings').insert(jobData);
+        const { error } = await supabase.from('job_openings').upsert(jobData);
 
         if (error) {
-            console.error("Error creating job:", error.message);
-            alert("Error creating job: " + error.message);
+            console.error("Error saving job:", error.message);
+            alert("Error saving job: " + error.message);
             return;
         }
 
-        alert("Job Opening Created!");
+        alert(editingJobId ? "Job Opening Updated!" : "Job Opening Published!");
         setIsModalOpen(false);
+        setEditingJobId(null);
         setNewJob({ title: '', description: '', questions: [] });
         fetchData();
+    };
+
+    const openEditJob = (job) => {
+        setEditingJobId(job.id);
+        setNewJob({ ...job });
+        setIsModalOpen(true);
     };
 
     const handleStatusUpdate = async (id, newStatus) => {
@@ -72,7 +93,7 @@ const ManageApplications = () => {
     };
 
     const deleteJob = async (id) => {
-        if (window.confirm("Delete this job opening?")) {
+        if (window.confirm("Delete this job opening? This will also hide associated applications.")) {
             const { error } = await supabase.from('job_openings').delete().eq('id', id);
             if (!error) fetchData();
         }
@@ -95,7 +116,7 @@ const ManageApplications = () => {
                 <div className="fade-in visible">
                     <div className="glass-card" style={{ marginBottom: '2rem', flexDirection: 'row', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3>Current Openings</h3>
-                        <button className="btn" onClick={() => setIsModalOpen(true)}>Create New Opening</button>
+                        <button className="btn" onClick={() => { setEditingJobId(null); setNewJob({ title: '', description: '', questions: [] }); setIsModalOpen(true); }}>Create New Opening</button>
                     </div>
 
                     <table className="management-table">
@@ -112,12 +133,14 @@ const ManageApplications = () => {
                                     <td>{job.title}</td>
                                     <td>{job.questions?.length || 0} questions</td>
                                     <td>
+                                        <button className="btn-icon" onClick={() => openEditJob(job)}>✏️</button>
                                         <button className="btn-icon delete" onClick={() => deleteJob(job.id)}>🗑️</button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    {jobs.length === 0 && <p style={{ textAlign: 'center', marginTop: '1rem' }}>No openings found.</p>}
                 </div>
             )}
 
@@ -136,25 +159,28 @@ const ManageApplications = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {applications.map(app => (
-                                    <tr key={app.id}>
-                                        <td>{app.applicant_name}</td>
-                                        <td>{app.job_openings?.title || 'Unknown'}</td>
-                                        <td>{new Date(app.submitted_at).toLocaleDateString()}</td>
-                                        <td><span className={`status-badge status-${app.status.toLowerCase()}`}>{app.status}</span></td>
-                                        <td>
-                                            <button className="btn" onClick={() => setSelectedApplication(app)}>View</button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {applications.map(app => {
+                                    const jobTitle = app.job_openings?.title || jobs.find(j => j.id === app.job_id)?.title || 'Unknown Position';
+                                    return (
+                                        <tr key={app.id}>
+                                            <td>{app.applicant_name}</td>
+                                            <td>{jobTitle}</td>
+                                            <td>{new Date(app.submitted_at).toLocaleDateString()}</td>
+                                            <td><span className={`status-badge status-${app.status.toLowerCase()}`}>{app.status}</span></td>
+                                            <td>
+                                                <button className="btn" onClick={() => setSelectedApplication(app)}>View</button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
-                        {applications.length === 0 && <p style={{ marginTop: '1rem', textAlign: 'center' }}>No new applications at this time.</p>}
+                        {applications.length === 0 && <p style={{ marginTop: '1rem', textAlign: 'center' }}>No applications found.</p>}
                     </div>
                 </div>
             )}
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create Job Opening">
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingJobId ? "Edit Job Opening" : "Create Job Opening"}>
                 <div className="modal-form">
                     <div className="form-group">
                         <label>Job Title</label>
@@ -169,8 +195,11 @@ const ManageApplications = () => {
 
                     <div className="questions-list">
                         {newJob.questions.map((q, idx) => (
-                            <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem', marginBottom: '0.5rem', borderRadius: '4px' }}>
-                                <strong>{idx + 1}. {q.text}</strong> <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>({q.type})</span>
+                            <div key={q.id} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem', marginBottom: '0.5rem', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <strong>{idx + 1}. {q.text}</strong> <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>({q.type})</span>
+                                </div>
+                                <button className="btn-icon delete" onClick={() => removeQuestion(q.id)} style={{ fontSize: '0.8rem' }}>✕</button>
                             </div>
                         ))}
                     </div>
@@ -191,7 +220,7 @@ const ManageApplications = () => {
                     </div>
 
                     <div className="modal-actions">
-                        <button className="btn" onClick={saveJob}>Publish Opening</button>
+                        <button className="btn" onClick={saveJob}>{editingJobId ? "Save Changes" : "Publish Opening"}</button>
                     </div>
                 </div>
             </Modal>
@@ -199,14 +228,21 @@ const ManageApplications = () => {
             {selectedApplication && (
                 <Modal isOpen={true} onClose={() => setSelectedApplication(null)} title={`Review: ${selectedApplication.applicant_name}`}>
                     <div className="application-review-content">
-                        <h4>Applying for: {selectedApplication.job_openings?.title}</h4>
-                        <div className="answers-review" style={{ marginTop: '1.5rem' }}>
-                            {Object.entries(selectedApplication.answers).map(([qId, answer]) => (
-                                <div key={qId} style={{ marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                                    <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Response:</p>
-                                    <p style={{ color: 'rgba(255,255,255,0.8)' }}>{answer}</p>
-                                </div>
-                            ))}
+                        <h4>Applying for: {selectedApplication.job_openings?.title || jobs.find(j => j.id === selectedApplication.job_id)?.title || 'Unknown Position'}</h4>
+                        <div className="answers-review" style={{ marginTop: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
+                            {/* We need to find the job to get the question texts if we want to show them */}
+                            {(() => {
+                                const job = jobs.find(j => j.id === selectedApplication.job_id);
+                                return Object.entries(selectedApplication.answers).map(([qId, answer]) => {
+                                    const questionText = job?.questions.find(q => q.id.toString() === qId || q.id === qId)?.text || "Question " + qId;
+                                    return (
+                                        <div key={qId} style={{ marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+                                            <p style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--color-primary)' }}>{questionText}</p>
+                                            <p style={{ color: 'rgba(255,255,255,0.8)', whiteSpace: 'pre-wrap' }}>{answer}</p>
+                                        </div>
+                                    );
+                                });
+                            })()}
                         </div>
                         <div className="modal-actions" style={{ marginTop: '2rem' }}>
                             <button className="btn" style={{ background: '#4CAF50' }} onClick={() => handleStatusUpdate(selectedApplication.id, 'Accepted')}>Accept</button>
