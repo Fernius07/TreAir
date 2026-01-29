@@ -42,20 +42,20 @@ const ManageFlights = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // In real app: Supabase Insert/Update
-        // await supabase.from('flights').upsert({ ...formData })
+        const flightData = {
+            ...formData,
+            id: editingId || 'TR' + Math.floor(Math.random() * 1000)
+        };
 
-        let updated;
-        if (editingId) {
-            // Edit existing
-            updated = flights.map(f => f.id === editingId ? { ...formData, id: editingId } : f);
-        } else {
-            // Add new (generate dummy ID if not present, usually DB handles this)
-            const newId = 'TR' + Math.floor(Math.random() * 1000);
-            updated = [...flights, { ...formData, id: newId }];
+        const { error } = await supabase.from('flights').upsert(flightData);
+
+        if (error) {
+            console.error("Error saving flight:", error.message);
+            alert("Error saving flight: " + error.message);
+            return;
         }
 
-        saveToStorage(updated);
+        fetchFlights(); // Refresh list from DB
         closeModal();
     };
 
@@ -77,10 +77,15 @@ const ManageFlights = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (id) => {
-        if (confirm("Delete flight?")) {
-            const updated = flights.filter(f => f.id !== id);
-            saveToStorage(updated);
+    const handleDelete = async (id) => {
+        if (window.confirm("Delete flight?")) {
+            const { error } = await supabase.from('flights').delete().eq('id', id);
+            if (error) {
+                console.error("Error deleting:", error.message);
+                alert("Error deleting flight");
+            } else {
+                fetchFlights();
+            }
         }
     };
 

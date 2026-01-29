@@ -38,8 +38,13 @@ const Recruitment = () => {
             submitted_at: new Date().toISOString()
         };
 
-        // In real app: save to DB
-        // await supabase.from('applications').insert(appData);
+        const { error } = await supabase.from('applications').insert(appData);
+
+        if (error) {
+            console.error("Submission error:", error.message);
+            alert("Error sending application: " + error.message);
+            return;
+        }
 
         alert("Application Submitted! Good luck.");
         setSelectedJob(null);

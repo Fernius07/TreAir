@@ -29,12 +29,18 @@ const ManageApplications = () => {
     const saveJob = async () => {
         if (!newJob.title) return;
 
-        // Supabase Insert to 'job_openings'
-        // await supabase.from('job_openings').insert(newJob);
+        const jobData = {
+            ...newJob,
+            id: Date.now() // Simple numeric ID for Supabase
+        };
 
-        // Fallback Store
-        const currentJobs = JSON.parse(localStorage.getItem('tre_air_jobs') || '[]');
-        localStorage.setItem('tre_air_jobs', JSON.stringify([...currentJobs, { ...newJob, id: Date.now() }]));
+        const { error } = await supabase.from('job_openings').insert(jobData);
+
+        if (error) {
+            console.error("Error creating job:", error.message);
+            alert("Error creating job: " + error.message);
+            return;
+        }
 
         alert("Job Opening Created!");
         setIsModalOpen(false);
