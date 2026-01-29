@@ -1,23 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/Modal';
 import './Management.css';
 
 const ManageApplications = () => {
-    // This component now manages Job Openings AND Reviews Applications
-    // We'll split it into two tabs for better UX
-    const [subTab, setSubTab] = useState('review'); // 'review' or 'create'
+    const [subTab, setSubTab] = useState('review');
     const [jobs, setJobs] = useState([]);
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedApplication, setSelectedApplication] = useState(null);
 
     // Form Builder State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newJob, setNewJob] = useState({ title: '', description: '', questions: [] });
     const [newQuestion, setNewQuestion] = useState({
         text: '',
-        type: 'short', // short, long, multiple
-        options: '' // Comma separated for multiple
+        type: 'short',
+        options: ''
     });
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        const { data: jobsData } = await supabase.from('job_openings').select('*').order('id', { ascending: false });
+        const { data: appsData } = await supabase.from('applications').select('*, job_openings(title)').order('submitted_at', { ascending: false });
+
+        setJobs(jobsData || []);
+        setApplications(appsData || []);
+        setLoading(false);
+    };
 
     const addQuestion = () => {
         if (!newQuestion.text) return;
@@ -31,7 +46,7 @@ const ManageApplications = () => {
 
         const jobData = {
             ...newJob,
-            id: Date.now() // Simple numeric ID for Supabase
+            id: Date.now()
         };
 
         const { error } = await supabase.from('job_openings').insert(jobData);
@@ -45,6 +60,22 @@ const ManageApplications = () => {
         alert("Job Opening Created!");
         setIsModalOpen(false);
         setNewJob({ title: '', description: '', questions: [] });
+        fetchData();
+    };
+
+    const handleStatusUpdate = async (id, newStatus) => {
+        const { error } = await supabase.from('applications').update({ status: newStatus }).eq('id', id);
+        if (!error) {
+            fetchData();
+            setSelectedApplication(null);
+        }
+    };
+
+    const deleteJob = async (id) => {
+        if (window.confirm("Delete this job opening?")) {
+            const { error } = await supabase.from('job_openings').delete().eq('id', id);
+            if (!error) fetchData();
+        }
     };
 
     return (
@@ -66,7 +97,27 @@ const ManageApplications = () => {
                         <h3>Current Openings</h3>
                         <button className="btn" onClick={() => setIsModalOpen(true)}>Create New Opening</button>
                     </div>
-                    {/* List of jobs would go here */}
+
+                    <table className="management-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Questions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {jobs.map(job => (
+                                <tr key={job.id}>
+                                    <td>{job.title}</td>
+                                    <td>{job.questions?.length || 0} questions</td>
+                                    <td>
+                                        <button className="btn-icon delete" onClick={() => deleteJob(job.id)}>🗑️</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
 
@@ -74,7 +125,31 @@ const ManageApplications = () => {
                 <div className="fade-in visible">
                     <div className="glass-card">
                         <h3>Pending Reviews</h3>
-                        <p>No new applications at this time.</p>
+                        <table className="management-table">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Position</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {applications.map(app => (
+                                    <tr key={app.id}>
+                                        <td>{app.applicant_name}</td>
+                                        <td>{app.job_openings?.title || 'Unknown'}</td>
+                                        <td>{new Date(app.submitted_at).toLocaleDateString()}</td>
+                                        <td><span className={`status-badge status-${app.status.toLowerCase()}`}>{app.status}</span></td>
+                                        <td>
+                                            <button className="btn" onClick={() => setSelectedApplication(app)}>View</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {applications.length === 0 && <p style={{ marginTop: '1rem', textAlign: 'center' }}>No new applications at this time.</p>}
                     </div>
                 </div>
             )}
@@ -120,6 +195,27 @@ const ManageApplications = () => {
                     </div>
                 </div>
             </Modal>
+
+            {selectedApplication && (
+                <Modal isOpen={true} onClose={() => setSelectedApplication(null)} title={`Review: ${selectedApplication.applicant_name}`}>
+                    <div className="application-review-content">
+                        <h4>Applying for: {selectedApplication.job_openings?.title}</h4>
+                        <div className="answers-review" style={{ marginTop: '1.5rem' }}>
+                            {Object.entries(selectedApplication.answers).map(([qId, answer]) => (
+                                <div key={qId} style={{ marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+                                    <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Response:</p>
+                                    <p style={{ color: 'rgba(255,255,255,0.8)' }}>{answer}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="modal-actions" style={{ marginTop: '2rem' }}>
+                            <button className="btn" style={{ background: '#4CAF50' }} onClick={() => handleStatusUpdate(selectedApplication.id, 'Accepted')}>Accept</button>
+                            <button className="btn" style={{ background: '#f44336' }} onClick={() => handleStatusUpdate(selectedApplication.id, 'Rejected')}>Reject</button>
+                            <button className="btn-text" onClick={() => setSelectedApplication(null)}>Close</button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 };
