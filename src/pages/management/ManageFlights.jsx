@@ -106,6 +106,7 @@ const ManageFlights = () => {
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>Origin</th>
                             <th>Destination</th>
                             <th>Departure</th>
                             <th>Gate</th>
@@ -141,6 +142,14 @@ const ManageFlights = () => {
                 title={editingId ? `Edit Flight ${editingId}` : "Add New Flight"}
             >
                 <form className="modal-form" onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label>Origin</label>
+                        <input
+                            type="text" required
+                            value={formData.origin}
+                            onChange={e => setFormData({ ...formData, origin: e.target.value })}
+                        />
+                    </div>
                     <div className="form-group">
                         <label>Destination</label>
                         <input
