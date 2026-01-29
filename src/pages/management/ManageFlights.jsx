@@ -62,7 +62,7 @@ const ManageFlights = () => {
     const openAddModal = () => {
         setEditingId(null);
         setFormData({
-            origin: 'Robloxia International',
+            origin: '',
             destination: '',
             status: 'Scheduled',
             departure: '',
