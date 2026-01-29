@@ -45,38 +45,35 @@ const FlightSchedule = () => {
 
     const filterAndSetFlights = (allFlights) => {
         const NOW = new Date();
-        // 1h 30m = 90 minutes = 90 * 60 * 1000 ms
         const EXPIRATION_MS = 90 * 60 * 1000;
 
-        const activeFlights = allFlights.filter(flight => {
-            // Assume flight.departure is ISO string or formatted date.
-            // For simplicity in this v2, we'll try to parse it. 
-            // If it's just "10:00 AM", we assume it's TODAY.
-
+        const processedFlights = allFlights.map(flight => {
             let flightTime = new Date();
-            const [time, modifier] = flight.departure.split(' ');
-            let [hours, minutes] = time.split(':');
+            try {
+                const parts = flight.departure.trim().split(/\s+/);
+                const timeParts = parts[0].split(':');
+                let hours = parseInt(timeParts[0], 10);
+                const minutes = parseInt(timeParts[1], 10) || 0;
 
-            if (hours === '12') hours = '00';
-            if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+                if (parts[1]) {
+                    const modifier = parts[1].toUpperCase();
+                    if (modifier === 'PM' && hours < 12) hours += 12;
+                    if (modifier === 'AM' && hours === 12) hours = 0;
+                }
 
-            flightTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+                flightTime.setHours(hours, minutes, 0, 0);
+            } catch (e) {
+                console.error("Error parsing time for flight", flight.id, e);
+            }
+            return { ...flight, _parsedTime: flightTime };
+        });
 
-            // Logic: specific date handling would be better with real DB columns (timestamp with time zone)
-            // For now, if the time is > 90 mins ago, hide it.
-            // Note: This logic implies daily rotation if no date is stored.
-
-            const diff = NOW - flightTime;
-            // If diff > EXPIRATION_MS, it's too old
-            // If diff is negative, it's in the future (keep it)
+        const activeFlights = processedFlights.filter(flight => {
+            const diff = NOW - flight._parsedTime;
             return diff < EXPIRATION_MS;
         });
 
-        // Sort by time
-        activeFlights.sort((a, b) => {
-            // Simple sort logic helper
-            return a.departure.localeCompare(b.departure);
-        });
+        activeFlights.sort((a, b) => a._parsedTime - b._parsedTime);
 
         setFlights(activeFlights);
     };
