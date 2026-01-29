@@ -1,0 +1,123 @@
+.page-container {
+    padding-top: 100px;
+    /* Navbar offset */
+    padding-bottom: 4rem;
+    min-height: 100vh;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 3rem;
+    font-size: 3rem;
+    color: var(--color-primary-light);
+}
+
+.schedule-board {
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.schedule-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+    padding: 1rem 2rem;
+    background: var(--color-primary-dark);
+    font-family: var(--font-header);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.schedule-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.schedule-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.flight-id {
+    font-weight: 700;
+    color: var(--color-primary-light);
+}
+
+.flight-dest {
+    font-size: 1.1rem;
+}
+
+.flight-status {
+    display: inline-block;
+    padding: 0.2rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.status-on-time {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.status-boarding {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    animation: pulse 2s infinite;
+}
+
+.status-delayed {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+.status-scheduled {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .schedule-header,
+    .schedule-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .flight-time,
+    .flight-gate,
+    .flight-dest {
+        display: block;
+        /* Stack or hide? Let's keep minimal info */
+    }
+
+    .schedule-header span:nth-child(3),
+    .schedule-header span:nth-child(4),
+    .schedule-row span:nth-child(3),
+    .schedule-row span:nth-child(4) {
+        display: none;
+        /* Hide time and gate on mobile to simplify */
+    }
+}

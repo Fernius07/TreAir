@@ -1,0 +1,72 @@
+.fleet-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.fleet-card {
+    display: flex;
+    overflow: hidden;
+    padding: 0;
+}
+
+.fleet-image {
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+    min-height: 300px;
+}
+
+.fleet-content {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.fleet-name {
+    color: var(--color-primary-light);
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+}
+
+.fleet-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.spec-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.spec-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.3rem;
+}
+
+.spec-value {
+    font-family: var(--font-header);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.fleet-desc {
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+    .fleet-card {
+        flex-direction: column;
+    }
+}
