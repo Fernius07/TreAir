@@ -118,6 +118,7 @@ const ManageFlights = () => {
                         {flights.map(flight => (
                             <tr key={flight.id} className="flight-row">
                                 <td>{flight.id}</td>
+                                <td>{flight.origin}</td>
                                 <td>{flight.destination}</td>
                                 <td>{flight.departure}</td>
                                 <td>{flight.gate}</td>
