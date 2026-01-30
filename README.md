@@ -113,6 +113,6 @@ TreeAir/
 
 <div align="center">
 
-**Desarrollado con ❤️ para la comunidad de Aviación en Roblox.**
+**Desarrollado con ❤️ por parte de Fernius007**
 
 </div>
