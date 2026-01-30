@@ -147,43 +147,70 @@
 }
 
 /* Modal and Form Styles */
+/* Modal and Form Styles - Premium Dark Theme */
 .modal-form {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 1.5rem;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.6rem;
 }
 
 .form-group label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-primary-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-    padding: 0.8rem 1rem;
-    background: rgba(0, 0, 0, 0.2);
+/* Global input/select/textarea styling for forms */
+.modal-form input,
+.modal-form select,
+.modal-form textarea {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    background: rgba(15, 25, 23, 0.7);
+    /* Deep dark teal-ish background */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-sm);
+    border-radius: 12px;
     color: white;
-    font-family: var(--font-body);
-    font-size: 1rem;
-    transition: border-color 0.3s;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
+.modal-form input:focus,
+.modal-form select:focus,
+.modal-form textarea:focus {
+    background: rgba(42, 157, 143, 0.15);
     border-color: var(--color-primary-light);
-    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.2);
+}
+
+.modal-form input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* Fix for Select visibility */
+.modal-form select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%232A9D8F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.2rem;
+    padding-right: 3rem;
+}
+
+.modal-form select option {
+    background: #0b1412;
+    color: white;
+    padding: 1rem;
 }
 
 .modal-actions {
@@ -191,8 +218,8 @@
     justify-content: flex-end;
     gap: 1rem;
     margin-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 2rem;
 }
 
 .btn-text {
@@ -201,8 +228,11 @@
     color: var(--color-text-muted);
     cursor: pointer;
     padding: 0.8rem 1.5rem;
-    font-weight: 600;
-    transition: color 0.3s;
+    font-weight: 700;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
 }
 
 .btn-text:hover {
@@ -212,43 +242,110 @@
 /* Tab Styles */
 .tab-buttons {
     display: flex;
-    gap: 1px;
+    gap: 4px;
     background: rgba(255, 255, 255, 0.05);
-    padding: 4px;
-    border-radius: var(--radius-sm);
+    padding: 6px;
+    border-radius: 12px;
+    width: fit-content;
 }
 
 .btn-tab {
     background: transparent;
     border: none;
     color: var(--color-text-muted);
-    padding: 0.6rem 1.2rem;
+    padding: 0.6rem 1.5rem;
     cursor: pointer;
     font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: 4px;
-    transition: all 0.2s;
+    font-weight: 700;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-tab.active {
     background: var(--color-btn-teal);
     color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-tab:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
 }
 
 /* Question Builder Specific Styles */
+.add-question-container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 1rem;
+    position: relative;
+    border-left: 4px solid var(--color-primary-light);
+}
+
+.add-question-header {
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.q-input-row {
+    margin-bottom: 1rem;
+}
+
+.q-type-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.builder-btn-add {
+    background: var(--color-primary-light);
+    color: white;
+    border: none;
+    min-width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(42, 157, 143, 0.3);
+}
+
+.builder-btn-add:hover {
+    background: #36c2b1;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(42, 157, 143, 0.4);
+}
+
+.multiple-options-input {
+    background: rgba(231, 111, 81, 0.05) !important;
+    border: 1px solid rgba(231, 111, 81, 0.2) !important;
+}
+
+.multiple-options-input:focus {
+    border-color: #e76f51 !important;
+    box-shadow: 0 0 0 4px rgba(231, 111, 81, 0.15) !important;
+}
+
 .questions-list {
     margin: 1.5rem 0;
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 1rem;
 }
 
 .question-item {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-sm);
-    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -256,90 +353,52 @@
 }
 
 .question-item:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: var(--color-primary-light);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(5px);
 }
 
 .question-info h4 {
-    font-size: 0.95rem;
-    margin-bottom: 0.2rem;
+    font-size: 1rem;
+    font-weight: 500;
     color: white;
+    margin-bottom: 0.3rem;
 }
 
 .question-info span {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    background: rgba(255, 255, 255, 0.05);
-    padding: 2px 6px;
-    border-radius: 4px;
-    text-transform: uppercase;
-}
-
-.add-question-container {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-md);
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-.add-question-header {
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: 0.7rem;
+    font-weight: 800;
     color: var(--color-primary-light);
-    letter-spacing: 0.5px;
-}
-
-.q-input-row {
-    display: flex;
-    gap: 0.8rem;
-    margin-bottom: 0.8rem;
-}
-
-.q-type-row {
-    display: flex;
-    gap: 0.8rem;
-}
-
-.builder-btn-add {
-    background: var(--color-btn-teal);
-    color: white;
-    border: none;
-    width: 42px;
-    height: 42px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    transition: all 0.2s;
-}
-
-.builder-btn-add:hover {
-    background: var(--color-btn-hover);
-    transform: scale(1.05);
-}
-
-.modal-form select.builder-select {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.multiple-options-input {
-    flex: 1;
-    background: rgba(42, 157, 143, 0.05) !important;
-    border: 1px solid rgba(42, 157, 143, 0.2) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(42, 157, 143, 0.1);
+    padding: 3px 10px;
+    border-radius: 6px;
 }
 
 .form-divider {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin: 1.5rem 0 1.5rem;
-    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+    margin: 2.5rem 0 1.5rem;
+    padding-bottom: 1rem;
     text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
     color: var(--color-primary-light);
-    font-weight: 700;
+    font-weight: 900;
+}
+
+.empty-questions-placeholder {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: rgba(255, 255, 255, 0.01);
+    border: 2px dashed rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+}
+
+.empty-questions-placeholder p {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    max-width: 250px;
+    margin: 0 auto;
+    line-height: 1.5;
 }

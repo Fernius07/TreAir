@@ -254,8 +254,8 @@ const ManageApplications = () => {
                             </div>
                         ))}
                         {newJob.questions.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>No questions added yet. Build your application form below.</p>
+                            <div className="empty-questions-placeholder">
+                                <p>No questions added yet. Build your application form below.</p>
                             </div>
                         )}
                     </div>
@@ -268,7 +268,6 @@ const ManageApplications = () => {
                                 placeholder="e.g. Do you have a pilot license?"
                                 value={newQuestion.text}
                                 onChange={e => setNewQuestion({ ...newQuestion, text: e.target.value })}
-                                style={{ flex: 1 }}
                             />
                         </div>
                         <div className="q-type-row">
@@ -276,7 +275,6 @@ const ManageApplications = () => {
                                 value={newQuestion.type}
                                 onChange={e => setNewQuestion({ ...newQuestion, type: e.target.value })}
                                 className="builder-select"
-                                style={{ flex: 1 }}
                             >
                                 <option value="short">Short Answer</option>
                                 <option value="long">Long Answer</option>
