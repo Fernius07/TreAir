@@ -146,7 +146,7 @@ const FlightSchedule = () => {
                     {flights.map((flight) => {
                         const originCode = getAirportCode(flight.origin);
                         const destCode = getAirportCode(flight.destination);
-                        const flightDate = flight._parsedTime || new Date();
+                        const flightDate = flight.flight_date ? new Date(flight.flight_date) : new Date();
 
                         return (
                             <div className={`flight-card status-${flight.status.toLowerCase().replace(' ', '-')}`}>

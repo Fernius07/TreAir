@@ -31,12 +31,7 @@ const ManageFlights = () => {
 
     // Aircraft options
     const aircraftOptions = [
-        'Boeing 737-800',
-        'Boeing 737 MAX 8',
-        'Airbus A320',
-        'Airbus A321',
-        'Embraer E190',
-        'Bombardier CRJ-900'
+        'ATR 72-600'
     ];
 
     // Validate flight date and time
@@ -283,7 +278,7 @@ const ManageFlights = () => {
                             }}>TR</span>
                             <input
                                 type="text"
-                                placeholder="e.g. 614"
+                                placeholder="e.g. 001"
                                 value={formData.flight_number}
                                 onChange={e => setFormData({ ...formData, flight_number: e.target.value })}
                                 style={{ flex: 1 }}
@@ -324,7 +319,7 @@ const ManageFlights = () => {
                             <label>Origin IATA</label>
                             <input
                                 type="text"
-                                placeholder="BIL"
+                                placeholder="OriginIATA"
                                 maxLength="3"
                                 value={formData.origin_iata}
                                 onChange={e => setFormData({ ...formData, origin_iata: e.target.value.toUpperCase() })}
@@ -335,7 +330,7 @@ const ManageFlights = () => {
                             <input
                                 type="text"
                                 required
-                                placeholder="Bilbao Airport"
+                                placeholder="Origin Airport"
                                 value={formData.origin}
                                 onChange={e => setFormData({ ...formData, origin: e.target.value })}
                             />
@@ -348,7 +343,7 @@ const ManageFlights = () => {
                             <label>Destination IATA</label>
                             <input
                                 type="text"
-                                placeholder="BCN"
+                                placeholder="Destination IATA"
                                 maxLength="3"
                                 value={formData.destination_iata}
                                 onChange={e => setFormData({ ...formData, destination_iata: e.target.value.toUpperCase() })}
@@ -359,7 +354,7 @@ const ManageFlights = () => {
                             <input
                                 type="text"
                                 required
-                                placeholder="Barcelona Airport"
+                                placeholder="Destination Airport"
                                 value={formData.destination}
                                 onChange={e => setFormData({ ...formData, destination: e.target.value })}
                             />
@@ -412,7 +407,7 @@ const ManageFlights = () => {
                             <label>Gate</label>
                             <input
                                 type="text"
-                                placeholder="B3"
+                                placeholder="e.g. A1"
                                 value={formData.gate}
                                 onChange={e => setFormData({ ...formData, gate: e.target.value })}
                             />
@@ -456,7 +451,7 @@ const ManageFlights = () => {
                                     <label>New Departure</label>
                                     <input
                                         type="text"
-                                        placeholder="15:30"
+                                        placeholder="HH:MM"
                                         value={formData.delayed_departure}
                                         onChange={e => setFormData({ ...formData, delayed_departure: e.target.value })}
                                     />
@@ -465,7 +460,7 @@ const ManageFlights = () => {
                                     <label>New Arrival</label>
                                     <input
                                         type="text"
-                                        placeholder="18:00"
+                                        placeholder="HH:MM"
                                         value={formData.delayed_arrival}
                                         onChange={e => setFormData({ ...formData, delayed_arrival: e.target.value })}
                                     />

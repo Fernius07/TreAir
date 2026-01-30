@@ -29,10 +29,10 @@ const Home = () => {
             <Hero />
 
             <div className="social-links-bar fade-in visible">
-                <a href="https://discord.gg/roblox" target="_blank" rel="noopener noreferrer" className="social-link discord">
+                <a href="https://discord.gg/QjJDABk9Nh" target="_blank" rel="noopener noreferrer" className="social-link discord">
                     Join our Discord
                 </a>
-                <a href="https://www.roblox.com/groups/placeholder" target="_blank" rel="noopener noreferrer" className="social-link roblox">
+                <a href="https://www.roblox.com/es/communities/33295484" target="_blank" rel="noopener noreferrer" className="social-link roblox">
                     Join Roblox Group
                 </a>
             </div>
