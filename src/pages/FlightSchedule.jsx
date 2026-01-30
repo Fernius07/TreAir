@@ -78,37 +78,96 @@ const FlightSchedule = () => {
         setFlights(activeFlights);
     };
 
+    const getAirportCode = (name) => {
+        if (!name) return "UNK";
+        // Simple logic to get 3-letter code. If already 3 letters, use it.
+        // Otherwise take first 3 chars uppercase.
+        // Or if it looks like "Bloxburg International", try "BIR".
+        // For now, let's just default to uppercase first 3.
+        return name.substring(0, 3).toUpperCase();
+    };
+
+    const formatDate = (dateObj) => {
+        // Format: Jan 28, 2026
+        // For this demo, since we often just have times, we'll fake the date based on "Today" or "Tomorrow" logic from parsing,
+        // or just show "Today" if no date.
+        // ideally we use the _parsedTime we created.
+        if (!dateObj) return "Unknown Date";
+        return dateObj.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    };
+
     return (
         <div className="page-container container">
-            <h1 className="page-title fade-in visible">Flight Schedule</h1>
+            <div className="page-header-content fade-in visible">
+                <h1 className="page-title">Flight Schedule</h1>
+                <p className="page-subtitle">Explore our upcoming and past operations. Tre Air provides reliable, low-cost travel across the most popular destinations.</p>
+            </div>
 
             {loading ? (
-                <div style={{ textAlign: 'center' }}>In Flight Connectivity...</div>
+                <div style={{ textAlign: 'center', padding: '4rem' }}>
+                    <div className="plane-icon" style={{ display: 'inline-block', fontSize: '2rem', animation: 'pulse 1s infinite' }}>✈</div>
+                    <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)' }}>Loading Schedule...</p>
+                </div>
             ) : flights.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(0,0,0,0.5)', borderRadius: '8px' }}>
-                    No scheduled flights at the moment. Check back later!
+                <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--color-bg-card)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h3>No Active Flights</h3>
+                    <p style={{ color: 'var(--color-text-muted)' }}>Please check back later for new scheduled operations.</p>
                 </div>
             ) : (
-                <div className="schedule-board fade-in visible">
-                    <div className="schedule-header">
-                        <span>Flight</span>
-                        <span>Destination</span>
-                        <span>Departure</span>
-                        <span>Gate</span>
-                        <span>Status</span>
-                    </div>
+                <div className="schedule-grid fade-in visible">
+                    {flights.map((flight) => {
+                        const originCode = getAirportCode(flight.origin || 'Robloxia');
+                        const destCode = getAirportCode(flight.destination);
+                        const flightDate = flight._parsedTime || new Date();
 
-                    {flights.map((flight) => (
-                        <div key={flight.id} className="schedule-row">
-                            <span className="flight-id">{flight.id}</span>
-                            <span className="flight-dest">{flight.destination}</span>
-                            <span className="flight-time">{flight.departure}</span>
-                            <span className="flight-gate">{flight.gate}</span>
-                            <span className={`flight-status status-${flight.status.toLowerCase().replace(' ', '-')}`}>
-                                {flight.status}
-                            </span>
-                        </div>
-                    ))}
+                        return (
+                            <div key={flight.id} className="flight-card">
+                                <div className="card-header">
+                                    <div>
+                                        <span className="flight-badge">TreFlex Premium</span>
+                                        <span className="flight-number-lg">TA-{flight.id}</span>
+                                    </div>
+                                    <div className="flight-date">
+                                        <span>{formatDate(flightDate)}</span>
+                                        <div style={{ fontSize: '0.7rem', opacity: 0.6, marginTop: '4px' }}>Scheduled</div>
+                                    </div>
+                                </div>
+
+                                <div className="route-visual">
+                                    <div className="airport">
+                                        <span className="ap-code">{originCode}</span>
+                                        <span className="ap-city">{flight.origin || 'Robloxia'}</span>
+                                    </div>
+
+                                    <div className="route-line-container">
+                                        <div className="route-line"></div>
+                                        <div className="plane-icon">✈</div>
+                                        <div style={{ fontSize: '0.6rem', marginTop: '15px', color: 'var(--color-text-muted)' }}>Direct</div>
+                                    </div>
+
+                                    <div className="airport">
+                                        <span className="ap-code">{destCode}</span>
+                                        <span className="ap-city">{flight.destination}</span>
+                                    </div>
+                                </div>
+
+                                <div className="card-footer">
+                                    <div className="departure-time">
+                                        <span style={{ opacity: 0.7 }}>🕒</span>
+                                        <span>{flight.departure} UTC</span>
+                                    </div>
+
+                                    {flight.status === 'Scheduled' || flight.status === 'On Time' ? (
+                                        <button className="reserve-btn">Reserve Seat ›</button>
+                                    ) : (
+                                        <span className={`status-badge status-${flight.status.toLowerCase().replace(' ', '-')}`}>
+                                            {flight.status}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
