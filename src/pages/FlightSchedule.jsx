@@ -144,7 +144,7 @@ const FlightSchedule = () => {
             ) : (
                 <div className="schedule-grid fade-in visible">
                     {flights.map((flight) => {
-                        const originCode = getAirportCode(flight.origin || 'Robloxia');
+                        const originCode = getAirportCode(flight.origin);
                         const destCode = getAirportCode(flight.destination);
                         const flightDate = flight._parsedTime || new Date();
 
@@ -152,7 +152,7 @@ const FlightSchedule = () => {
                             <div className={`flight-card status-${flight.status.toLowerCase().replace(' ', '-')}`}>
                                 <div className="card-header">
                                     <div>
-                                        <span className="flight-badge">TR{flight.flight_number || flight.id}</span>
+                                        <span className="flight-badge">{flight.flight_number ? `TR${flight.flight_number}` : flight.id}</span>
                                         {flight.aircraft && <span className="aircraft-label">{flight.aircraft}</span>}
                                     </div>
                                     <div className="flight-date">
@@ -206,9 +206,10 @@ const FlightSchedule = () => {
                                 </div>
 
                                 {/* Delay Calculation */}
-                                {flight.status === 'Delayed' && flight.delayed_departure && (
+                                {flight.status === 'Delayed' && (flight.delayed_departure || flight.delayed_arrival) && (
                                     <div className="delay-info">
-                                        {calculateDelay(flight.departure, flight.delayed_departure)}
+                                        {flight.delayed_departure && calculateDelay(flight.departure, flight.delayed_departure)}
+                                        {!flight.delayed_departure && flight.delayed_arrival && calculateDelay(flight.arrival_time, flight.delayed_arrival)}
                                     </div>
                                 )}
 

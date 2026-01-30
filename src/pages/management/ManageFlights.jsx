@@ -11,7 +11,7 @@ const ManageFlights = () => {
 
     const [formData, setFormData] = useState({
         flight_number: '',
-        origin: 'Robloxia International',
+        origin: '',
         origin_iata: '',
         destination: '',
         destination_iata: '',
@@ -19,7 +19,7 @@ const ManageFlights = () => {
         departure: '',
         arrival_time: '',
         duration: '',
-        aircraft: 'Boeing 737-800',
+        aircraft: '',
         gate: '',
         reason: '',
         delayed_departure: '',
@@ -122,7 +122,7 @@ const ManageFlights = () => {
         setEditingId(null);
         setFormData({
             flight_number: '',
-            origin: 'Robloxia International',
+            origin: '',
             origin_iata: '',
             destination: '',
             destination_iata: '',
@@ -130,7 +130,7 @@ const ManageFlights = () => {
             departure: '',
             arrival_time: '',
             duration: '',
-            aircraft: 'Boeing 737-800',
+            aircraft: '',
             gate: '',
             reason: '',
             delayed_departure: '',
