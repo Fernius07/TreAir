@@ -6,6 +6,34 @@ const FlightSchedule = () => {
     const [flights, setFlights] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Calculate delay between original and delayed times
+    const calculateDelay = (originalTime, delayedTime) => {
+        if (!originalTime || !delayedTime) return null;
+
+        try {
+            const parseTime = (timeStr) => {
+                const parts = timeStr.trim().split(':');
+                return parseInt(parts[0]) * 60 + parseInt(parts[1] || 0);
+            };
+
+            const originalMinutes = parseTime(originalTime);
+            const delayedMinutes = parseTime(delayedTime);
+            let diffMinutes = delayedMinutes - originalMinutes;
+
+            if (diffMinutes < 0) diffMinutes += 24 * 60;
+
+            const hours = Math.floor(diffMinutes / 60);
+            const minutes = diffMinutes % 60;
+
+            if (hours > 0 && minutes > 0) return `+${hours}h ${minutes}m delay`;
+            if (hours > 0) return `+${hours}h delay`;
+            if (minutes > 0) return `+${minutes}m delay`;
+            return null;
+        } catch (e) {
+            return null;
+        }
+    };
+
     useEffect(() => {
         fetchFlights();
         // Refresh every minute to check for expired flights
@@ -124,7 +152,7 @@ const FlightSchedule = () => {
                             <div className={`flight-card status-${flight.status.toLowerCase().replace(' ', '-')}`}>
                                 <div className="card-header">
                                     <div>
-                                        <span className="flight-badge">TA-{flight.id}</span>
+                                        <span className="flight-badge">TR{flight.flight_number || flight.id}</span>
                                         {flight.aircraft && <span className="aircraft-label">{flight.aircraft}</span>}
                                     </div>
                                     <div className="flight-date">
@@ -137,9 +165,20 @@ const FlightSchedule = () => {
 
                                 <div className="route-visual">
                                     <div className="airport">
-                                        <span className="ap-code">{originCode}</span>
+                                        <span className="ap-code">{flight.origin_iata || originCode}</span>
                                         <span className="ap-city">{flight.origin || 'Robloxia'}</span>
-                                        <div className="time">{flight.departure}</div>
+                                        <div className="time">
+                                            {flight.status === 'Delayed' && flight.delayed_departure ? (
+                                                <>
+                                                    <span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: '0.5rem' }}>
+                                                        {flight.departure}
+                                                    </span>
+                                                    <span style={{ color: '#e76f51', fontWeight: '700' }}>
+                                                        {flight.delayed_departure}
+                                                    </span>
+                                                </>
+                                            ) : flight.departure}
+                                        </div>
                                     </div>
 
                                     <div className="route-line-container">
@@ -149,11 +188,29 @@ const FlightSchedule = () => {
                                     </div>
 
                                     <div className="airport">
-                                        <span className="ap-code">{destCode}</span>
+                                        <span className="ap-code">{flight.destination_iata || destCode}</span>
                                         <span className="ap-city">{flight.destination}</span>
-                                        <div className="time">{flight.arrival_time || '--:--'}</div>
+                                        <div className="time">
+                                            {flight.status === 'Delayed' && flight.delayed_arrival ? (
+                                                <>
+                                                    <span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: '0.5rem' }}>
+                                                        {flight.arrival_time}
+                                                    </span>
+                                                    <span style={{ color: '#e76f51', fontWeight: '700' }}>
+                                                        {flight.delayed_arrival}
+                                                    </span>
+                                                </>
+                                            ) : (flight.arrival_time || '--:--')}
+                                        </div>
                                     </div>
                                 </div>
+
+                                {/* Delay Calculation */}
+                                {flight.status === 'Delayed' && flight.delayed_departure && (
+                                    <div className="delay-info">
+                                        {calculateDelay(flight.departure, flight.delayed_departure)}
+                                    </div>
+                                )}
 
                                 {flight.status === 'Canceled' && flight.reason && (
                                     <div className="cancellation-reason">

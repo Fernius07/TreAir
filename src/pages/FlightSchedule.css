@@ -196,6 +196,12 @@
     }
 }
 
+/* Flying Status Highlighting */
+.flight-card.status-flying {
+    border-color: #3498db;
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+}
+
 .aircraft-label {
     display: block;
     font-size: 0.75rem;
@@ -209,6 +215,8 @@
     font-weight: 700;
     text-transform: uppercase;
     margin-top: 4px;
+    background: transparent;
+    /* Fix: Remove background conflict */
 }
 
 .status-tag.status-on-time {
@@ -217,6 +225,10 @@
 
 .status-tag.status-boarding {
     color: #ffc107;
+}
+
+.status-tag.status-flying {
+    color: #3498db;
 }
 
 .status-tag.status-delayed {
@@ -241,11 +253,31 @@
 .duration-label {
     font-size: 0.7rem;
     color: var(--color-text-muted);
-    background: var(--color-bg-dark);
+    background: transparent;
+    /* Fix: Remove background */
     padding: 2px 8px;
     border-radius: 10px;
     margin-top: 15px;
     z-index: 2;
+}
+
+.plane-icon {
+    background: transparent !important;
+    /* Fix: Remove background */
+}
+
+.delay-info {
+    text-align: center;
+    padding: 0.6rem 1rem;
+    background: rgba(231, 111, 81, 0.1);
+    border: 1px solid rgba(231, 111, 81, 0.3);
+    border-radius: 8px;
+    color: #e76f51;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .cancellation-reason {
