@@ -245,27 +245,55 @@ const ManageApplications = () => {
 
                     <div className="questions-list">
                         {newJob.questions.map((q, idx) => (
-                            <div key={q.id} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem', marginBottom: '0.5rem', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <strong>{idx + 1}. {q.text}</strong> <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>({q.type})</span>
+                            <div key={q.id} className="question-item">
+                                <div className="question-info">
+                                    <h4>{idx + 1}. {q.text}</h4>
+                                    <span>{q.type} {q.options ? `(${q.options})` : ''}</span>
                                 </div>
-                                <button className="btn-icon delete" onClick={() => removeQuestion(q.id)} style={{ fontSize: '0.8rem' }}>✕</button>
+                                <button className="btn-icon delete" onClick={() => removeQuestion(q.id)}>✕</button>
                             </div>
                         ))}
+                        {newJob.questions.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>No questions added yet. Build your application form below.</p>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="add-question-box glass-card" style={{ padding: '1rem', marginTop: '1rem' }}>
-                        <input type="text" placeholder="Question Text" value={newQuestion.text} onChange={e => setNewQuestion({ ...newQuestion, text: e.target.value })} style={{ width: '100%', marginBottom: '0.5rem' }} />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <select value={newQuestion.type} onChange={e => setNewQuestion({ ...newQuestion, type: e.target.value })} style={{ flex: 1 }}>
+                    <div className="add-question-container">
+                        <div className="add-question-header">Add New Field</div>
+                        <div className="q-input-row">
+                            <input
+                                type="text"
+                                placeholder="e.g. Do you have a pilot license?"
+                                value={newQuestion.text}
+                                onChange={e => setNewQuestion({ ...newQuestion, text: e.target.value })}
+                                style={{ flex: 1 }}
+                            />
+                        </div>
+                        <div className="q-type-row">
+                            <select
+                                value={newQuestion.type}
+                                onChange={e => setNewQuestion({ ...newQuestion, type: e.target.value })}
+                                className="builder-select"
+                                style={{ flex: 1 }}
+                            >
                                 <option value="short">Short Answer</option>
                                 <option value="long">Long Answer</option>
                                 <option value="multiple">Multiple Choice</option>
                             </select>
+
                             {newQuestion.type === 'multiple' && (
-                                <input type="text" placeholder="Options (comma sep)" value={newQuestion.options} onChange={e => setNewQuestion({ ...newQuestion, options: e.target.value })} style={{ flex: 1 }} />
+                                <input
+                                    type="text"
+                                    placeholder="Options (comma separated)"
+                                    value={newQuestion.options}
+                                    onChange={e => setNewQuestion({ ...newQuestion, options: e.target.value })}
+                                    className="multiple-options-input"
+                                />
                             )}
-                            <button onClick={addQuestion} className="btn-icon" style={{ background: 'var(--color-primary-light)', color: 'white', borderRadius: '4px', width: '40px' }}>+</button>
+
+                            <button onClick={addQuestion} className="builder-btn-add" title="Add Field">+</button>
                         </div>
                     </div>
 

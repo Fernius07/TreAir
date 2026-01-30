@@ -236,6 +236,103 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Question Builder Specific Styles */
+.questions-list {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.question-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.question-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--color-primary-light);
+}
+
+.question-info h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+    color: white;
+}
+
+.question-info span {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.add-question-container {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.add-question-header {
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-primary-light);
+    letter-spacing: 0.5px;
+}
+
+.q-input-row {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.q-type-row {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.builder-btn-add {
+    background: var(--color-btn-teal);
+    color: white;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.builder-btn-add:hover {
+    background: var(--color-btn-hover);
+    transform: scale(1.05);
+}
+
+.modal-form select.builder-select {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.multiple-options-input {
+    flex: 1;
+    background: rgba(42, 157, 143, 0.05) !important;
+    border: 1px solid rgba(42, 157, 143, 0.2) !important;
+}
+
 .form-divider {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin: 1.5rem 0 1.5rem;
