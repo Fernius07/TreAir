@@ -11,6 +11,7 @@ const ManageFlights = () => {
 
     const [formData, setFormData] = useState({
         flight_number: '',
+        flight_date: '',
         origin: '',
         origin_iata: '',
         destination: '',
@@ -26,6 +27,8 @@ const ManageFlights = () => {
         delayed_arrival: ''
     });
 
+    const [validationError, setValidationError] = useState('');
+
     // Aircraft options
     const aircraftOptions = [
         'Boeing 737-800',
@@ -35,6 +38,26 @@ const ManageFlights = () => {
         'Embraer E190',
         'Bombardier CRJ-900'
     ];
+
+    // Validate flight date and time
+    const validateFlightTime = (date, time) => {
+        if (!date || !time) return true; // Allow empty for now
+
+        try {
+            const [hours, minutes] = time.split(':').map(Number);
+            const flightDateTime = new Date(date);
+            flightDateTime.setHours(hours, minutes, 0, 0);
+
+            const now = new Date();
+
+            if (flightDateTime < now) {
+                return false;
+            }
+            return true;
+        } catch (e) {
+            return true; // If parsing fails, don't block
+        }
+    };
 
     // Calculate duration between two times
     const calculateDuration = (startTime, endTime) => {
@@ -90,6 +113,15 @@ const ManageFlights = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validate flight time
+        if (!validateFlightTime(formData.flight_date, formData.departure)) {
+            setValidationError('La hora de salida ya ha pasado. Por favor, selecciona una fecha y hora futura.');
+            return;
+        }
+
+        // Clear any previous errors
+        setValidationError('');
+
         const flightData = {
             ...formData,
             id: editingId || 'TR' + Math.floor(Math.random() * 1000)
@@ -122,6 +154,7 @@ const ManageFlights = () => {
         setEditingId(null);
         setFormData({
             flight_number: '',
+            flight_date: '',
             origin: '',
             origin_iata: '',
             destination: '',
@@ -136,6 +169,7 @@ const ManageFlights = () => {
             delayed_departure: '',
             delayed_arrival: ''
         });
+        setValidationError('');
         setIsModalOpen(true);
     };
 
@@ -143,6 +177,7 @@ const ManageFlights = () => {
         setEditingId(flight.id);
         setFormData({
             flight_number: flight.flight_number || '',
+            flight_date: flight.flight_date || '',
             origin: flight.origin || '',
             origin_iata: flight.origin_iata || '',
             destination: flight.destination || '',
@@ -157,6 +192,7 @@ const ManageFlights = () => {
             delayed_departure: flight.delayed_departure || '',
             delayed_arrival: flight.delayed_arrival || ''
         });
+        setValidationError('');
         setIsModalOpen(true);
     };
 
@@ -232,19 +268,98 @@ const ManageFlights = () => {
                 title={editingId ? `Edit Flight ${editingId}` : "Add New Flight"}
             >
                 <form className="modal-form" onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group">
-                            <label>Origin</label>
+                    {/* Flight Number */}
+                    <div className="form-group">
+                        <label>Flight Number</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{
+                                padding: '1rem 1.2rem',
+                                background: 'rgba(42, 157, 143, 0.1)',
+                                border: '1px solid rgba(42, 157, 143, 0.3)',
+                                borderRadius: '12px',
+                                color: 'var(--color-primary-light)',
+                                fontWeight: '700',
+                                fontSize: '0.95rem'
+                            }}>TR</span>
                             <input
-                                type="text" required placeholder="Origin Airport"
+                                type="text"
+                                placeholder="e.g. 614"
+                                value={formData.flight_number}
+                                onChange={e => setFormData({ ...formData, flight_number: e.target.value })}
+                                style={{ flex: 1 }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Flight Date */}
+                    <div className="form-group">
+                        <label>Flight Date</label>
+                        <input
+                            type="date"
+                            required
+                            value={formData.flight_date}
+                            onChange={e => setFormData({ ...formData, flight_date: e.target.value })}
+                            min={new Date().toISOString().split('T')[0]}
+                        />
+                    </div>
+
+                    {/* Validation Error */}
+                    {validationError && (
+                        <div style={{
+                            background: 'rgba(231, 76, 60, 0.1)',
+                            border: '1px solid rgba(231, 76, 60, 0.3)',
+                            borderRadius: '8px',
+                            padding: '0.8rem',
+                            color: '#e74c3c',
+                            fontSize: '0.85rem',
+                            marginBottom: '1rem'
+                        }}>
+                            ⚠️ {validationError}
+                        </div>
+                    )}
+
+                    {/* Origin with IATA */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+                        <div className="form-group">
+                            <label>Origin IATA</label>
+                            <input
+                                type="text"
+                                placeholder="BIL"
+                                maxLength="3"
+                                value={formData.origin_iata}
+                                onChange={e => setFormData({ ...formData, origin_iata: e.target.value.toUpperCase() })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Origin Airport</label>
+                            <input
+                                type="text"
+                                required
+                                placeholder="Bilbao Airport"
                                 value={formData.origin}
                                 onChange={e => setFormData({ ...formData, origin: e.target.value })}
                             />
                         </div>
+                    </div>
+
+                    {/* Destination with IATA */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
                         <div className="form-group">
-                            <label>Destination</label>
+                            <label>Destination IATA</label>
                             <input
-                                type="text" required placeholder="Destination Airport"
+                                type="text"
+                                placeholder="BCN"
+                                maxLength="3"
+                                value={formData.destination_iata}
+                                onChange={e => setFormData({ ...formData, destination_iata: e.target.value.toUpperCase() })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Destination Airport</label>
+                            <input
+                                type="text"
+                                required
+                                placeholder="Barcelona Airport"
                                 value={formData.destination}
                                 onChange={e => setFormData({ ...formData, destination: e.target.value })}
                             />
@@ -269,28 +384,35 @@ const ManageFlights = () => {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Duration</label>
+                            <label>Duration (Auto)</label>
                             <input
-                                type="text" placeholder="2h 30m"
+                                type="text"
+                                placeholder="Auto-calculated"
                                 value={formData.duration}
-                                onChange={e => setFormData({ ...formData, duration: e.target.value })}
+                                readOnly
+                                style={{ background: 'rgba(42, 157, 143, 0.05)', cursor: 'not-allowed' }}
                             />
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    {/* Aircraft & Gate */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
                         <div className="form-group">
                             <label>Aircraft</label>
-                            <input
-                                type="text" placeholder="e.g. Boeing 737"
+                            <select
                                 value={formData.aircraft}
                                 onChange={e => setFormData({ ...formData, aircraft: e.target.value })}
-                            />
+                            >
+                                {aircraftOptions.map(aircraft => (
+                                    <option key={aircraft} value={aircraft}>{aircraft}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="form-group">
                             <label>Gate</label>
                             <input
-                                type="text" placeholder="e.g. A4"
+                                type="text"
+                                placeholder="B3"
                                 value={formData.gate}
                                 onChange={e => setFormData({ ...formData, gate: e.target.value })}
                             />
