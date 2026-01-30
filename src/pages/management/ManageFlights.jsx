@@ -143,43 +143,50 @@ const ManageFlights = () => {
                 title={editingId ? `Edit Flight ${editingId}` : "Add New Flight"}
             >
                 <form className="modal-form" onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Origin</label>
-                        <input
-                            type="text" required
-                            value={formData.origin}
-                            onChange={e => setFormData({ ...formData, origin: e.target.value })}
-                        />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group">
+                            <label>Origin</label>
+                            <input
+                                type="text" required placeholder="e.g. Robloxia Int."
+                                value={formData.origin}
+                                onChange={e => setFormData({ ...formData, origin: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Destination</label>
+                            <input
+                                type="text" required placeholder="e.g. Bloxburg"
+                                value={formData.destination}
+                                onChange={e => setFormData({ ...formData, destination: e.target.value })}
+                            />
+                        </div>
                     </div>
-                    <div className="form-group">
-                        <label>Destination</label>
-                        <input
-                            type="text" required
-                            value={formData.destination}
-                            onChange={e => setFormData({ ...formData, destination: e.target.value })}
-                        />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group">
+                            <label>Departure (UTC)</label>
+                            <input
+                                type="text" required placeholder="e.g. 14:30"
+                                value={formData.departure}
+                                onChange={e => setFormData({ ...formData, departure: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Gate</label>
+                            <input
+                                type="text" placeholder="e.g. A4"
+                                value={formData.gate}
+                                onChange={e => setFormData({ ...formData, gate: e.target.value })}
+                            />
+                        </div>
                     </div>
-                    <div className="form-group">
-                        <label>Departure Time (e.g. 14:30)</label>
-                        <input
-                            type="text" required
-                            value={formData.departure}
-                            onChange={e => setFormData({ ...formData, departure: e.target.value })}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Gate</label>
-                        <input
-                            type="text"
-                            value={formData.gate}
-                            onChange={e => setFormData({ ...formData, gate: e.target.value })}
-                        />
-                    </div>
+
                     <div className="form-group">
                         <label>Status</label>
                         <select
                             value={formData.status}
                             onChange={e => setFormData({ ...formData, status: e.target.value })}
+                            style={{ width: '100%' }}
                         >
                             <option>Scheduled</option>
                             <option>On Time</option>
@@ -188,9 +195,10 @@ const ManageFlights = () => {
                             <option>Landed</option>
                         </select>
                     </div>
+
                     <div className="modal-actions">
                         <button type="button" className="btn-text" onClick={closeModal}>Cancel</button>
-                        <button type="submit" className="btn">Save Flight</button>
+                        <button type="submit" className="btn">{editingId ? 'Save Changes' : 'Create Flight'}</button>
                     </div>
                 </form>
             </Modal>
