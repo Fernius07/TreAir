@@ -6,6 +6,7 @@ import './Management.css';
 
 const ManageApplications = () => {
     const [subTab, setSubTab] = useState('review');
+    const [reviewFilter, setReviewFilter] = useState('To Review'); // Categories: To Review, Accepted, Rejected
     const [jobs, setJobs] = useState([]);
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -14,7 +15,13 @@ const ManageApplications = () => {
 
     // Form Builder State
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newJob, setNewJob] = useState({ title: '', description: '', questions: [] });
+    const [newJob, setNewJob] = useState({
+        title: '',
+        description: '',
+        department: 'Flight Operations',
+        banner_url: '',
+        questions: []
+    });
     const [newQuestion, setNewQuestion] = useState({
         text: '',
         type: 'short',
@@ -27,15 +34,12 @@ const ManageApplications = () => {
 
     const fetchData = async () => {
         setLoading(true);
-        // Fetch jobs first
         const { data: jobsData } = await supabase.from('job_openings').select('*').order('id', { ascending: false });
         setJobs(jobsData || []);
 
-        // Fetch applications. Try with join, if it fails, fetch without join.
-        let { data: appsData, error } = await supabase.from('applications').select('*, job_openings(title)').order('submitted_at', { ascending: false });
+        let { data: appsData, error } = await supabase.from('applications').select('*, job_openings(*)').order('submitted_at', { ascending: false });
 
         if (error) {
-            console.warn("Join failed, fetching applications without join...");
             const { data: simpleApps } = await supabase.from('applications').select('*').order('submitted_at', { ascending: false });
             appsData = simpleApps;
         }
@@ -74,7 +78,7 @@ const ManageApplications = () => {
         alert(editingJobId ? "Job Opening Updated!" : "Job Opening Published!");
         setIsModalOpen(false);
         setEditingJobId(null);
-        setNewJob({ title: '', description: '', questions: [] });
+        setNewJob({ title: '', description: '', department: 'Flight Operations', banner_url: '', questions: [] });
         fetchData();
     };
 
@@ -92,12 +96,25 @@ const ManageApplications = () => {
         }
     };
 
+    const deleteApplication = async (id) => {
+        if (window.confirm("Delete this application? This action cannot be undone.")) {
+            const { error } = await supabase.from('applications').delete().eq('id', id);
+            if (!error) fetchData();
+            else alert("Error deleting application: " + error.message);
+        }
+    };
+
     const deleteJob = async (id) => {
         if (window.confirm("Delete this job opening? This will also hide associated applications.")) {
             const { error } = await supabase.from('job_openings').delete().eq('id', id);
             if (!error) fetchData();
         }
     };
+
+    const filteredApplications = applications.filter(app => {
+        if (reviewFilter === 'To Review') return app.status === 'Pending' || (!app.status);
+        return app.status === reviewFilter;
+    });
 
     return (
         <div className="page-container container">
@@ -116,13 +133,14 @@ const ManageApplications = () => {
                 <div className="fade-in visible">
                     <div className="glass-card" style={{ marginBottom: '2rem', flexDirection: 'row', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3>Current Openings</h3>
-                        <button className="btn" onClick={() => { setEditingJobId(null); setNewJob({ title: '', description: '', questions: [] }); setIsModalOpen(true); }}>Create New Opening</button>
+                        <button className="btn" onClick={() => { setEditingJobId(null); setNewJob({ title: '', description: '', department: 'Flight Operations', banner_url: '', questions: [] }); setIsModalOpen(true); }}>Create New Opening</button>
                     </div>
 
                     <table className="management-table">
                         <thead>
                             <tr>
                                 <th>Title</th>
+                                <th>Department</th>
                                 <th>Questions</th>
                                 <th>Actions</th>
                             </tr>
@@ -131,6 +149,7 @@ const ManageApplications = () => {
                             {jobs.map(job => (
                                 <tr key={job.id}>
                                     <td>{job.title}</td>
+                                    <td><span className="flight-badge" style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}>{job.department || 'General'}</span></td>
                                     <td>{job.questions?.length || 0} questions</td>
                                     <td>
                                         <button className="btn-icon" onClick={() => openEditJob(job)}>✏️</button>
@@ -146,12 +165,24 @@ const ManageApplications = () => {
 
             {subTab === 'review' && (
                 <div className="fade-in visible">
+                    <div className="category-filters" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem' }}>
+                        {['To Review', 'Accepted', 'Rejected'].map(cat => (
+                            <button
+                                key={cat}
+                                className={`btn-tab ${reviewFilter === cat ? 'active' : ''}`}
+                                onClick={() => setReviewFilter(cat)}
+                                style={{ borderBottom: 'none', background: reviewFilter === cat ? 'var(--color-primary-light)' : 'rgba(255,255,255,0.05)', borderRadius: '4px', padding: '0.5rem 1rem' }}
+                            >
+                                {cat} ({applications.filter(a => (cat === 'To Review' ? (a.status === 'Pending' || !a.status) : a.status === cat)).length})
+                            </button>
+                        ))}
+                    </div>
+
                     <div className="glass-card">
-                        <h3>Pending Reviews</h3>
                         <table className="management-table">
                             <thead>
                                 <tr>
-                                    <th>Applicant</th>
+                                    <th>ID</th>
                                     <th>Position</th>
                                     <th>Date</th>
                                     <th>Status</th>
@@ -159,23 +190,24 @@ const ManageApplications = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {applications.map(app => {
+                                {filteredApplications.map(app => {
                                     const jobTitle = app.job_openings?.title || jobs.find(j => j.id === app.job_id)?.title || 'Unknown Position';
                                     return (
                                         <tr key={app.id}>
-                                            <td>{app.applicant_name}</td>
+                                            <td style={{ fontFamily: 'monospace', color: 'var(--color-primary-light)' }}>#{app.id.toString().slice(-6)}</td>
                                             <td>{jobTitle}</td>
                                             <td>{new Date(app.submitted_at).toLocaleDateString()}</td>
-                                            <td><span className={`status-badge status-${app.status.toLowerCase()}`}>{app.status}</span></td>
+                                            <td><span className={`status-badge status-${(app.status || 'Pending').toLowerCase()}`}>{app.status || 'Pending'}</span></td>
                                             <td>
                                                 <button className="btn" onClick={() => setSelectedApplication(app)}>View</button>
+                                                <button className="btn-icon delete" style={{ marginLeft: '0.5rem' }} onClick={() => deleteApplication(app.id)}>🗑️</button>
                                             </td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
-                        {applications.length === 0 && <p style={{ marginTop: '1rem', textAlign: 'center' }}>No applications found.</p>}
+                        {filteredApplications.length === 0 && <p style={{ marginTop: '1rem', textAlign: 'center' }}>No applications in this category.</p>}
                     </div>
                 </div>
             )}
@@ -186,6 +218,24 @@ const ManageApplications = () => {
                         <label>Job Title</label>
                         <input type="text" value={newJob.title} onChange={e => setNewJob({ ...newJob, title: e.target.value })} placeholder="e.g. Senior Pilot" />
                     </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group">
+                            <label>Department</label>
+                            <select value={newJob.department} onChange={e => setNewJob({ ...newJob, department: e.target.value })}>
+                                <option>Flight Operations</option>
+                                <option>Cabin Crew</option>
+                                <option>Ground Support</option>
+                                <option>Engineering</option>
+                                <option>Corporate</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Banner Image URL</label>
+                            <input type="text" value={newJob.banner_url} onChange={e => setNewJob({ ...newJob, banner_url: e.target.value })} placeholder="https://..." />
+                        </div>
+                    </div>
+
                     <div className="form-group">
                         <label>Description</label>
                         <textarea value={newJob.description} onChange={e => setNewJob({ ...newJob, description: e.target.value })} rows="3" />
@@ -215,7 +265,7 @@ const ManageApplications = () => {
                             {newQuestion.type === 'multiple' && (
                                 <input type="text" placeholder="Options (comma sep)" value={newQuestion.options} onChange={e => setNewQuestion({ ...newQuestion, options: e.target.value })} style={{ flex: 1 }} />
                             )}
-                            <button onClick={addQuestion} className="btn-icon" style={{ background: 'var(--color-primary)', color: 'white', borderRadius: '4px', width: '40px' }}>+</button>
+                            <button onClick={addQuestion} className="btn-icon" style={{ background: 'var(--color-primary-light)', color: 'white', borderRadius: '4px', width: '40px' }}>+</button>
                         </div>
                     </div>
 
@@ -228,16 +278,18 @@ const ManageApplications = () => {
             {selectedApplication && (
                 <Modal isOpen={true} onClose={() => setSelectedApplication(null)} title={`Review: ${selectedApplication.applicant_name}`}>
                     <div className="application-review-content">
-                        <h4>Applying for: {selectedApplication.job_openings?.title || jobs.find(j => j.id === selectedApplication.job_id)?.title || 'Unknown Position'}</h4>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <h4>Applying for: {selectedApplication.job_openings?.title || jobs.find(j => j.id === selectedApplication.job_id)?.title || 'Unknown Position'}</h4>
+                            <span className="flight-badge" style={{ background: 'rgba(255,255,255,0.1)' }}>ID: #{selectedApplication.id.toString().slice(-6)}</span>
+                        </div>
                         <div className="answers-review" style={{ marginTop: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
-                            {/* We need to find the job to get the question texts if we want to show them */}
                             {(() => {
                                 const job = jobs.find(j => j.id === selectedApplication.job_id);
                                 return Object.entries(selectedApplication.answers).map(([qId, answer]) => {
                                     const questionText = job?.questions.find(q => q.id.toString() === qId || q.id === qId)?.text || "Question " + qId;
                                     return (
                                         <div key={qId} style={{ marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                                            <p style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--color-primary)' }}>{questionText}</p>
+                                            <p style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--color-primary-light)' }}>{questionText}</p>
                                             <p style={{ color: 'rgba(255,255,255,0.8)', whiteSpace: 'pre-wrap' }}>{answer}</p>
                                         </div>
                                     );

@@ -9,13 +9,16 @@ const ManageFlights = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
-    // Form State
     const [formData, setFormData] = useState({
         origin: 'Robloxia International',
         destination: '',
         status: 'Scheduled',
         departure: '',
-        gate: ''
+        arrival_time: '',
+        duration: '',
+        aircraft: 'Boeing 737-800',
+        gate: '',
+        reason: ''
     });
 
     useEffect(() => {
@@ -23,20 +26,10 @@ const ManageFlights = () => {
     }, []);
 
     const fetchFlights = async () => {
-        // In production we use supabase. For now fall back to local if DB fails
         const { data, error } = await supabase.from('flights').select('*');
         if (!error && data) {
             setFlights(data);
-        } else {
-            // Fallback
-            const stored = localStorage.getItem('tre_air_flights_db');
-            if (stored) setFlights(JSON.parse(stored));
         }
-    };
-
-    const saveToStorage = (updatedFlights) => {
-        localStorage.setItem('tre_air_flights_db', JSON.stringify(updatedFlights));
-        setFlights(updatedFlights);
     };
 
     const handleSubmit = async (e) => {
@@ -47,6 +40,11 @@ const ManageFlights = () => {
             id: editingId || 'TR' + Math.floor(Math.random() * 1000)
         };
 
+        // Clear reason if not canceled
+        if (flightData.status !== 'Canceled') {
+            flightData.reason = '';
+        }
+
         const { error } = await supabase.from('flights').upsert(flightData);
 
         if (error) {
@@ -55,37 +53,46 @@ const ManageFlights = () => {
             return;
         }
 
-        fetchFlights(); // Refresh list from DB
+        fetchFlights();
         closeModal();
     };
 
     const openAddModal = () => {
         setEditingId(null);
         setFormData({
-            origin: '',
+            origin: 'Robloxia International',
             destination: '',
             status: 'Scheduled',
             departure: '',
-            gate: ''
+            arrival_time: '',
+            duration: '',
+            aircraft: 'Boeing 737-800',
+            gate: '',
+            reason: ''
         });
         setIsModalOpen(true);
     };
 
     const openEditModal = (flight) => {
         setEditingId(flight.id);
-        setFormData({ ...flight });
+        setFormData({
+            origin: flight.origin || '',
+            destination: flight.destination || '',
+            status: flight.status || 'Scheduled',
+            departure: flight.departure || '',
+            arrival_time: flight.arrival_time || '',
+            duration: flight.duration || '',
+            aircraft: flight.aircraft || '',
+            gate: flight.gate || '',
+            reason: flight.reason || ''
+        });
         setIsModalOpen(true);
     };
 
     const handleDelete = async (id) => {
         if (window.confirm("Delete flight?")) {
             const { error } = await supabase.from('flights').delete().eq('id', id);
-            if (error) {
-                console.error("Error deleting:", error.message);
-                alert("Error deleting flight");
-            } else {
-                fetchFlights();
-            }
+            if (!error) fetchFlights();
         }
     };
 
@@ -94,7 +101,10 @@ const ManageFlights = () => {
     return (
         <div className="page-container container">
             <div className="management-header">
-                <h1 className="page-title">Manage Flights</h1>
+                <div>
+                    <h1 className="page-title">Manage Flights</h1>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Real-time schedule operations</p>
+                </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button className="btn" onClick={openAddModal}>Add Flight +</button>
                     <Link to="/management" className="btn-back" style={{ alignSelf: 'center' }}>Back</Link>
@@ -108,8 +118,9 @@ const ManageFlights = () => {
                             <th>ID</th>
                             <th>Origin</th>
                             <th>Destination</th>
-                            <th>Departure</th>
-                            <th>Gate</th>
+                            <th>Depart</th>
+                            <th>Arrive</th>
+                            <th>Aircraft</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -117,11 +128,12 @@ const ManageFlights = () => {
                     <tbody>
                         {flights.map(flight => (
                             <tr key={flight.id} className="flight-row">
-                                <td>{flight.id}</td>
+                                <td style={{ fontFamily: 'monospace', color: 'var(--color-primary-light)' }}>#{flight.id}</td>
                                 <td>{flight.origin}</td>
                                 <td>{flight.destination}</td>
                                 <td>{flight.departure}</td>
-                                <td>{flight.gate}</td>
+                                <td>{flight.arrival_time || '--:--'}</td>
+                                <td style={{ fontSize: '0.8rem', opacity: 0.8 }}>{flight.aircraft}</td>
                                 <td>
                                     <span className={`status-badge status-${flight.status.toLowerCase().replace(' ', '-')}`}>
                                         {flight.status}
@@ -147,7 +159,7 @@ const ManageFlights = () => {
                         <div className="form-group">
                             <label>Origin</label>
                             <input
-                                type="text" required placeholder="e.g. Robloxia Int."
+                                type="text" required placeholder="Origin Airport"
                                 value={formData.origin}
                                 onChange={e => setFormData({ ...formData, origin: e.target.value })}
                             />
@@ -155,20 +167,47 @@ const ManageFlights = () => {
                         <div className="form-group">
                             <label>Destination</label>
                             <input
-                                type="text" required placeholder="e.g. Bloxburg"
+                                type="text" required placeholder="Destination Airport"
                                 value={formData.destination}
                                 onChange={e => setFormData({ ...formData, destination: e.target.value })}
                             />
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                         <div className="form-group">
                             <label>Departure (UTC)</label>
                             <input
-                                type="text" required placeholder="e.g. 14:30"
+                                type="text" required placeholder="HH:MM"
                                 value={formData.departure}
                                 onChange={e => setFormData({ ...formData, departure: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Arrival (UTC)</label>
+                            <input
+                                type="text" placeholder="HH:MM"
+                                value={formData.arrival_time}
+                                onChange={e => setFormData({ ...formData, arrival_time: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Duration</label>
+                            <input
+                                type="text" placeholder="2h 30m"
+                                value={formData.duration}
+                                onChange={e => setFormData({ ...formData, duration: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group">
+                            <label>Aircraft</label>
+                            <input
+                                type="text" placeholder="e.g. Boeing 737"
+                                value={formData.aircraft}
+                                onChange={e => setFormData({ ...formData, aircraft: e.target.value })}
                             />
                         </div>
                         <div className="form-group">
@@ -186,15 +225,28 @@ const ManageFlights = () => {
                         <select
                             value={formData.status}
                             onChange={e => setFormData({ ...formData, status: e.target.value })}
-                            style={{ width: '100%' }}
+                            style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
                         >
                             <option>Scheduled</option>
                             <option>On Time</option>
                             <option>Boarding</option>
                             <option>Delayed</option>
                             <option>Landed</option>
+                            <option>Canceled</option>
                         </select>
                     </div>
+
+                    {formData.status === 'Canceled' && (
+                        <div className="form-group fade-in visible">
+                            <label>Reason for Cancellation</label>
+                            <textarea
+                                placeholder="e.g. Technical issues, Bad weather..."
+                                value={formData.reason}
+                                onChange={e => setFormData({ ...formData, reason: e.target.value })}
+                                style={{ background: 'rgba(231, 76, 60, 0.1)', border: '1px solid rgba(231, 76, 60, 0.3)' }}
+                            />
+                        </div>
+                    )}
 
                     <div className="modal-actions">
                         <button type="button" className="btn-text" onClick={closeModal}>Cancel</button>

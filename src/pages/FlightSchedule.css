@@ -169,27 +169,116 @@
     background: var(--color-btn-hover);
 }
 
-/* Status variants */
-.status-badge {
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
+/* Highlighting Variants */
+.flight-card.status-boarding {
+    border-color: #ffc107;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
+    animation: pulse-border 2s infinite;
 }
 
-.status-scheduled {
-    background: rgba(255, 255, 255, 0.1);
+.flight-card.status-canceled {
+    opacity: 0.7;
+    filter: grayscale(0.5);
+    border-style: dashed;
+}
+
+@keyframes pulse-border {
+    0% {
+        border-color: rgba(255, 193, 7, 0.4);
+    }
+
+    50% {
+        border-color: rgba(255, 193, 7, 1);
+    }
+
+    100% {
+        border-color: rgba(255, 193, 7, 0.4);
+    }
+}
+
+.aircraft-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 0.4rem;
+    font-weight: 500;
+}
+
+.status-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.status-tag.status-on-time {
+    color: #2ecc71;
+}
+
+.status-tag.status-boarding {
+    color: #ffc107;
+}
+
+.status-tag.status-delayed {
+    color: #e74c3c;
+}
+
+.status-tag.status-canceled {
+    color: #e74c3c;
+}
+
+.status-tag.status-landed {
+    color: var(--color-text-muted);
+}
+
+.airport .time {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 5px;
     color: white;
 }
 
-.status-boarding {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.3);
+.duration-label {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg-dark);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 15px;
+    z-index: 2;
 }
 
-.status-on-time {
-    background: rgba(76, 175, 80, 0.2);
-    color: #4caf50;
+.cancellation-reason {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+    border-left: 3px solid #e74c3c;
+}
+
+.gate-info {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.footer-status-pill {
+    padding: 0.4rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-boarding .footer-status-pill {
+    background: #ffc107;
+    color: black;
+}
+
+.status-canceled .footer-status-pill {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
 }

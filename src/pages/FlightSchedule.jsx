@@ -121,15 +121,17 @@ const FlightSchedule = () => {
                         const flightDate = flight._parsedTime || new Date();
 
                         return (
-                            <div key={flight.id} className="flight-card">
+                            <div className={`flight-card status-${flight.status.toLowerCase().replace(' ', '-')}`}>
                                 <div className="card-header">
                                     <div>
-                                        <span className="flight-badge">TreFlex Premium</span>
-                                        <span className="flight-number-lg">TA-{flight.id}</span>
+                                        <span className="flight-badge">TA-{flight.id}</span>
+                                        {flight.aircraft && <span className="aircraft-label">{flight.aircraft}</span>}
                                     </div>
                                     <div className="flight-date">
                                         <span>{formatDate(flightDate)}</span>
-                                        <div style={{ fontSize: '0.7rem', opacity: 0.6, marginTop: '4px' }}>Scheduled</div>
+                                        <div className={`status-tag status-${flight.status.toLowerCase().replace(' ', '-')}`}>
+                                            {flight.status}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -137,33 +139,35 @@ const FlightSchedule = () => {
                                     <div className="airport">
                                         <span className="ap-code">{originCode}</span>
                                         <span className="ap-city">{flight.origin || 'Robloxia'}</span>
+                                        <div className="time">{flight.departure}</div>
                                     </div>
 
                                     <div className="route-line-container">
                                         <div className="route-line"></div>
                                         <div className="plane-icon">✈</div>
-                                        <div style={{ fontSize: '0.6rem', marginTop: '15px', color: 'var(--color-text-muted)' }}>Direct</div>
+                                        {flight.duration && <div className="duration-label">{flight.duration}</div>}
                                     </div>
 
                                     <div className="airport">
                                         <span className="ap-code">{destCode}</span>
                                         <span className="ap-city">{flight.destination}</span>
+                                        <div className="time">{flight.arrival_time || '--:--'}</div>
                                     </div>
                                 </div>
 
-                                <div className="card-footer">
-                                    <div className="departure-time">
-                                        <span style={{ opacity: 0.7 }}>🕒</span>
-                                        <span>{flight.departure} UTC</span>
+                                {flight.status === 'Canceled' && flight.reason && (
+                                    <div className="cancellation-reason">
+                                        <strong>Canceled:</strong> {flight.reason}
                                     </div>
+                                )}
 
-                                    {flight.status === 'Scheduled' || flight.status === 'On Time' ? (
-                                        <button className="reserve-btn">Reserve Seat ›</button>
-                                    ) : (
-                                        <span className={`status-badge status-${flight.status.toLowerCase().replace(' ', '-')}`}>
-                                            {flight.status}
-                                        </span>
-                                    )}
+                                <div className="card-footer">
+                                    <div className="gate-info">
+                                        <span style={{ opacity: 0.6 }}>Gate:</span> {flight.gate || 'TBD'}
+                                    </div>
+                                    <div className="footer-status-pill">
+                                        {flight.status === 'Boarding' ? 'Go to Gate' : flight.status}
+                                    </div>
                                 </div>
                             </div>
                         );
